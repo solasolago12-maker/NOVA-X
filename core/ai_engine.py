@@ -99,6 +99,8 @@ class AIEngine:
             self._init_ollama()
         elif self._provider == "local":
             self._init_local()
+        elif self._provider == "vllm":
+            self._init_vllm()
         elif self._provider == "openai":
             self._init_openai()
 
@@ -174,10 +176,11 @@ class AIEngine:
             else:
                 print("[INFO] No CUDA GPU detected; running local model on CPU.")
 
-            # Instantiate the Llama model. Avoid forcing GPU kwargs here to keep
-            # behavior stable across environments; users can configure advanced
-            # options in their local environment.
-            self._local = Llama(model_path=model_path)
+            # Instantiate the Llama model with optional performance kwargs.
+            n_ctx = int(cfg.get("n_ctx", 2048)) if cfg.get("n_ctx") is not None else 2048
+            n_gpu_layers = int(cfg.get("n_gpu_layers", 0)) if cfg.get("n_gpu_layers") is not None else 0
+            use_mmap = bool(cfg.get("use_mmap", True))
+            self._local = Llama(model_path=model_path, n_ctx=n_ctx, n_gpu_layers=n_gpu_layers, use_mmap=use_mmap)
             self._model_client = "local"
             self._model_name = model_path
         except Exception as exc:
@@ -206,6 +209,42 @@ class AIEngine:
         except Exception:
             pass
         return "cpu"
+
+    def _init_vllm(self) -> None:
+        """Attempt to initialise a vllm client if available.
+
+        This is a lightweight integration: if `vllm` is installed the engine
+        will attempt to create a simple client instance; otherwise the
+        provider remains unavailable with a warning.
+        """
+        cfg = self._config
+        model_path = cfg.get("model_path", "") or cfg.get("vllm_model_path", "")
+        try:
+            from vllm import Client
+        except Exception:
+            print("[WARNING] vllm not installed. vllm provider unavailable.")
+            self._model_client = None
+            self._vllm = None
+            self._model_name = ""
+            return
+
+        if not model_path:
+            print("[WARNING] No vllm model path configured. Set `vllm_model_path` in config.")
+            self._model_client = None
+            self._vllm = None
+            self._model_name = ""
+            return
+
+        try:
+            # Create a vllm client (serverless usage)
+            self._vllm = Client(model=model_path)
+            self._model_client = "vllm"
+            self._model_name = model_path
+        except Exception as exc:
+            print(f"[WARNING] Failed to initialise vllm client for {model_path}: {exc}")
+            self._model_client = None
+            self._vllm = None
+            self._model_name = ""
 
     def _init_openai(self) -> None:
         """Set up the OpenAI-compatible API connection."""
@@ -278,6 +317,8 @@ class AIEngine:
             return self._chat_ollama(message, mode, history)
         elif self._provider == "local":
             return self._chat_local(message, mode, history)
+        elif self._provider == "vllm":
+            return self._chat_vllm(message, mode, history)
         elif self._provider == "openai":
             return self._chat_openai(message, mode, history)
         return "[ERROR] No AI provider configured."
@@ -299,6 +340,8 @@ class AIEngine:
             yield from self._chat_ollama_stream(message, mode, history)
         elif self._provider == "local":
             yield from self._chat_local_stream(message, mode, history)
+        elif self._provider == "vllm":
+            yield from self._chat_vllm_stream(message, mode, history)
         elif self._provider == "openai":
             yield from self._chat_openai_stream(message, mode, history)
         else:
@@ -335,6 +378,26 @@ class AIEngine:
         """Streaming wrapper for local model (yields full response as single chunk)."""
         result = self._chat_local(message, mode, history)
         yield result
+
+    def _chat_vllm(self, message: str, mode: str, history: Optional[List[Dict[str, str]]]) -> str:
+        """Simple synchronous interface for vllm client if available."""
+        if not getattr(self, "_vllm", None):
+            return "[ERROR] vllm provider not configured or vllm not installed."
+        try:
+            system = SYSTEM_PROMPTS.get(mode, SYSTEM_PROMPTS["default"])
+            prompt = self._format_local_prompt(system, history, message)
+            # vllm Client.generate returns an iterator of responses; use simplest path
+            gen = self._vllm.generate(prompt=prompt, max_tokens=512)
+            # Collect text from first result
+            for r in gen:
+                return getattr(r, "text", str(r))
+            return "[No response]"
+        except Exception as exc:
+            return f"[ERROR] vllm request failed: {exc}"
+
+    def _chat_vllm_stream(self, message: str, mode: str, history: Optional[List[Dict[str, str]]]) -> Iterator[str]:
+        resp = self._chat_vllm(message, mode, history)
+        yield resp
 
     # ------------------------------------------------------------------
     # Gemini provider

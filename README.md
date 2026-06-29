@@ -60,6 +60,17 @@ pip install "llama-cpp-python>=0.1.0"
 ```
 
 The engine performs a lightweight GPU detection at startup and will print guidance; advanced GPU/config options are left to users and model builds.
+
+vllm (optional)
+----------------
+
+You can also use `vllm` as a high-performance GPU-first inference backend. Install and configure `vllm` separately and set `vllm_model_path` in the config. NOVA-X will detect `vllm` if installed and attempt to use it when `ai_provider` is set to `vllm`.
+
+Example usage with the included example script:
+
+```bash
+python examples/run_local.py --model-path /path/to/model.gguf
+```
 ```
 
 ### Run

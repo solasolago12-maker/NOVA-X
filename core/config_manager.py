@@ -21,6 +21,10 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "openai_base_url": "https://api.openai.com/v1",
     "openai_model": "gpt-4o-mini",
     "local_model_path": "",
+    "local_n_ctx": 2048,
+    "local_n_gpu_layers": 0,
+    "local_use_mmap": True,
+    "vllm_model_path": "",
     "theme": "dark",
     "user_name": "",
     "grade_level": "",
@@ -162,5 +166,13 @@ class ConfigManager:
             return {
                 "provider": "local",
                 "model_path": self._config.get("local_model_path", ""),
+                "n_ctx": self._config.get("local_n_ctx", 2048),
+                "n_gpu_layers": self._config.get("local_n_gpu_layers", 0),
+                "use_mmap": self._config.get("local_use_mmap", True),
+            }
+        elif provider == "vllm":
+            return {
+                "provider": "vllm",
+                "model_path": self._config.get("vllm_model_path", ""),
             }
         return {"provider": provider}
