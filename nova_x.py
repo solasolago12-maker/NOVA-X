@@ -202,10 +202,42 @@ def main() -> None:
         choices=["chat", "math", "essay", "code", "research", "quiz", "explain", "jarvis"],
         help="Launch directly into a specific mode (default: chat)",
     )
+    parser.add_argument(
+        "--auto-tune-local", action="store_true",
+        help="Run auto-tune for local llama-cpp-python model (non-interactive).",
+    )
+    parser.add_argument(
+        "--model-path", type=str, default="",
+        help="Path to local model used by auto-tune/benchmark commands.",
+    )
+    parser.add_argument(
+        "--iterations", type=int, default=3,
+        help="Number of iterations for benchmarks/auto-tune (default: 3)",
+    )
+    parser.add_argument(
+        "--warmup", type=int, default=1,
+        help="Number of warmup runs for benchmarks (default: 1)",
+    )
+    parser.add_argument(
+        "--csv", type=str, default="",
+        help="Optional CSV file path to append benchmark results.",
+    )
     args = parser.parse_args()
 
     if args.setup:
         run_setup_wizard()
+        return
+
+    if args.auto_tune_local:
+        # Run auto-tune (non-interactive). Defer import to avoid heavy deps at startup.
+        if not args.model_path:
+            print("[ERROR] --model-path is required for --auto-tune-local")
+            return
+        try:
+            from examples.auto_tune_local import auto_tune
+            auto_tune(args.model_path, iterations=args.iterations, warmup=args.warmup, csv_log=args.csv or None)
+        except Exception as exc:
+            print(f"[ERROR] Auto-tune failed: {exc}")
         return
 
     config = ConfigManager()
