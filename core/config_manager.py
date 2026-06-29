@@ -20,6 +20,7 @@ DEFAULT_CONFIG: Dict[str, Any] = {
     "openai_api_key": "",
     "openai_base_url": "https://api.openai.com/v1",
     "openai_model": "gpt-4o-mini",
+    "local_model_path": "",
     "theme": "dark",
     "user_name": "",
     "grade_level": "",
@@ -156,5 +157,10 @@ class ConfigManager:
                 "api_key": self._config.get("openai_api_key", ""),
                 "base_url": self._config.get("openai_base_url", "https://api.openai.com/v1"),
                 "model": self._config.get("openai_model", "gpt-4o-mini"),
+            }
+        elif provider == "local":
+            return {
+                "provider": "local",
+                "model_path": self._config.get("local_model_path", ""),
             }
         return {"provider": provider}

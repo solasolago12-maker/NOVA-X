@@ -97,6 +97,8 @@ class AIEngine:
             self._init_gemini()
         elif self._provider == "ollama":
             self._init_ollama()
+        elif self._provider == "local":
+            self._init_local()
         elif self._provider == "openai":
             self._init_openai()
 
@@ -139,6 +141,41 @@ class AIEngine:
         self._model_name = self._config.get("model", "llama3.2")
         self._model_client = "ollama"  # Ollama uses direct HTTP calls
 
+    def _init_local(self) -> None:
+        """Set up a local LLM using llama-cpp-python when available.
+
+        Expects `model_path` in the ai config. If the package is not
+        installed or the model path is not configured, the local provider
+        will be disabled with a warning.
+        """
+        cfg = self._config
+        model_path = cfg.get("model_path", "") or cfg.get("local_model_path", "")
+        try:
+            from llama_cpp import Llama
+        except Exception:
+            print("[WARNING] llama-cpp-python not installed. Local provider unavailable.")
+            self._model_client = None
+            self._local = None
+            self._model_name = ""
+            return
+
+        if not model_path:
+            print("[WARNING] No local model path configured. Set `local_model_path` in config.")
+            self._model_client = None
+            self._local = None
+            self._model_name = ""
+            return
+
+        try:
+            self._local = Llama(model_path=model_path)
+            self._model_client = "local"
+            self._model_name = model_path
+        except Exception as exc:
+            print(f"[WARNING] Failed to load local model at {model_path}: {exc}")
+            self._model_client = None
+            self._local = None
+            self._model_name = ""
+
     def _init_openai(self) -> None:
         """Set up the OpenAI-compatible API connection."""
         self._base_url = self._config.get("base_url", "https://api.openai.com/v1")
@@ -177,6 +214,13 @@ class AIEngine:
             except requests.RequestException:
                 pass
             return ["llama3.2", "llama3.1", "mistral", "phi4", "qwen2.5", "qwen2.5:7b"]
+        elif self._provider == "local":
+            # For local provider we return configured model path when present
+            try:
+                mp = self._config.get("model_path", "") or self._config.get("local_model_path", "")
+                return [mp] if mp else ["local-model"]
+            except Exception:
+                return ["local-model"]
         elif self._provider == "openai":
             return ["gpt-4o-mini", "gpt-4o", "gpt-3.5-turbo"]
         return []
@@ -201,6 +245,8 @@ class AIEngine:
             return self._chat_gemini(message, mode, history)
         elif self._provider == "ollama":
             return self._chat_ollama(message, mode, history)
+        elif self._provider == "local":
+            return self._chat_local(message, mode, history)
         elif self._provider == "openai":
             return self._chat_openai(message, mode, history)
         return "[ERROR] No AI provider configured."
@@ -220,10 +266,44 @@ class AIEngine:
             yield from self._chat_gemini_stream(message, mode, history)
         elif self._provider == "ollama":
             yield from self._chat_ollama_stream(message, mode, history)
+        elif self._provider == "local":
+            yield from self._chat_local_stream(message, mode, history)
         elif self._provider == "openai":
             yield from self._chat_openai_stream(message, mode, history)
         else:
             yield "[ERROR] No AI provider configured."
+
+    # ------------------------------------------------------------------
+    # Local (llama-cpp-python) provider
+    # ------------------------------------------------------------------
+
+    def _format_local_prompt(self, system: str, history: Optional[List[Dict[str, str]]], message: str) -> str:
+        parts = [f"System: {system}", ""]
+        if history:
+            for m in history[-10:]:
+                role = m.get("role", "user")
+                parts.append(f"{role.capitalize()}: {m.get('content', '')}")
+        parts.append(f"User: {message}")
+        parts.append("Assistant:")
+        return "\n".join(parts)
+
+    def _chat_local(self, message: str, mode: str, history: Optional[List[Dict[str, str]]]) -> str:
+        """Synchronous local LLM chat using llama-cpp-python."""
+        if not getattr(self, "_local", None):
+            return "[ERROR] Local model not configured or failed to load."
+        try:
+            system = SYSTEM_PROMPTS.get(mode, SYSTEM_PROMPTS["default"])
+            prompt = self._format_local_prompt(system, history, message)
+            resp = self._local.create(prompt=prompt, max_tokens=512, temperature=0.2)
+            # llama-cpp-python returns choices with 'text'
+            return resp.get("choices", [{}])[0].get("text", "[No response]")
+        except Exception as exc:
+            return f"[ERROR] Local model request failed: {exc}"
+
+    def _chat_local_stream(self, message: str, mode: str, history: Optional[List[Dict[str, str]]]) -> Iterator[str]:
+        """Streaming wrapper for local model (yields full response as single chunk)."""
+        result = self._chat_local(message, mode, history)
+        yield result
 
     # ------------------------------------------------------------------
     # Gemini provider
