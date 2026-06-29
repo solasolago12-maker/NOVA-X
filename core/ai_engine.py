@@ -167,6 +167,16 @@ class AIEngine:
             return
 
         try:
+            # Detect local acceleration (CUDA / CPU) and report recommendation
+            accel = self._detect_local_acceleration()
+            if accel == "cuda":
+                print("[INFO] CUDA-capable GPU detected; llama-cpp-python can use GPU acceleration if built accordingly.")
+            else:
+                print("[INFO] No CUDA GPU detected; running local model on CPU.")
+
+            # Instantiate the Llama model. Avoid forcing GPU kwargs here to keep
+            # behavior stable across environments; users can configure advanced
+            # options in their local environment.
             self._local = Llama(model_path=model_path)
             self._model_client = "local"
             self._model_name = model_path
@@ -175,6 +185,27 @@ class AIEngine:
             self._model_client = None
             self._local = None
             self._model_name = ""
+
+    def _detect_local_acceleration(self) -> str:
+        """Return 'cuda' if a CUDA-capable GPU appears available, otherwise 'cpu'.
+
+        This performs lightweight checks without adding heavy dependencies:
+        - If `torch` is installed and reports CUDA available, return 'cuda'.
+        - Else if `nvidia-smi` is present on PATH, return 'cuda'.
+        - Otherwise return 'cpu'.
+        """
+        try:
+            import importlib, shutil
+            torch_spec = importlib.util.find_spec("torch")
+            if torch_spec is not None:
+                import torch
+                if getattr(torch, "cuda", None) and torch.cuda.is_available():
+                    return "cuda"
+            if shutil.which("nvidia-smi"):
+                return "cuda"
+        except Exception:
+            pass
+        return "cpu"
 
     def _init_openai(self) -> None:
         """Set up the OpenAI-compatible API connection."""

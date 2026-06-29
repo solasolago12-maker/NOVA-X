@@ -40,6 +40,26 @@ pip install "llama-cpp-python>=0.1.0"
 ```
 
 You will also need a compatible GGML or GGUF model file. See `llama-cpp-python` documentation and model repositories (e.g. Hugging Face) for download instructions. Configure the model path in the NOVA-X setup or by setting `local_model_path` in `~/.nova_x/config.json`.
+
+GPU notes and recommendations
+---------------------------
+
+llama-cpp-python can be built with GPU support (CUDA) for much faster inference on supported NVIDIA hardware. Quick tips:
+
+- If you have an NVIDIA GPU, install `torch` with CUDA matching your drivers to enable detection, or ensure `nvidia-smi` is available.
+- When running on CPU-only systems, choose an optimized GGUF model (quantized) for reasonable performance.
+- Example: install `llama-cpp-python` and `torch` (CUDA) with:
+
+```bash
+# CPU-only (simplest)
+pip install "llama-cpp-python>=0.1.0"
+
+# GPU (example - choose the correct CUDA version for your system)
+pip install torch --index-url https://download.pytorch.org/whl/cu118
+pip install "llama-cpp-python>=0.1.0"
+```
+
+The engine performs a lightweight GPU detection at startup and will print guidance; advanced GPU/config options are left to users and model builds.
 ```
 
 ### Run
