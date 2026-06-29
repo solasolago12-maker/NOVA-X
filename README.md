@@ -2,6 +2,8 @@
 
 **Next-Gen Omniscient Virtual Assistant -- eXtreme**
 
+![CI](https://github.com/solasolago12-maker/NOVA-X/actions/workflows/ci.yml/badge.svg)
+
 NOVA-X is a terminal-based AI assistant built for students, with support for multiple providers and specialized academic workflows. The app includes a Rich-powered TUI, subject tracking, assignment management, and safe Ollama endpoint handling.
 
 ## Features
@@ -137,6 +139,10 @@ python -m pytest -q
 ## Configuration
 
 User settings are stored in `~/.nova_x/config.json`.
+
+## Security
+
+If you discover a security vulnerability, please report it privately to `security@nova-x.dev`. Do not open a public issue for sensitive security reports — see `SECURITY.md` for details.
 
 ## Notes
 
