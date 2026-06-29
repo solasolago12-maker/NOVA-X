@@ -71,6 +71,18 @@ Example usage with the included example script:
 ```bash
 python examples/run_local.py --model-path /path/to/model.gguf
 ```
+
+Benchmarking
+------------
+
+There is a simple benchmark script to measure latency of the `local` or
+`vllm` providers:
+
+```bash
+python examples/benchmark_local.py --provider local --model-path /path/to/model.gguf --iterations 10
+```
+
+Adjust `--iterations` and `--warmup` to suit your hardware.
 ```
 
 ### Run
