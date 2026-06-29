@@ -1,251 +1,150 @@
-# NOVA-X
+﻿# NOVA-X
 
 **Next-Gen Omniscient Virtual Assistant -- eXtreme**
 
-NOVA-X is an AI-powered homework assistant that runs in your terminal. It supports multiple AI providers (Gemini, Ollama, OpenAI), features 7 specialised modes for different academic tasks, and tracks your learning progress over time.
-Ollama host/model handling
----------------------------
-
-When configuring the Ollama provider, NOVA-X treats the host (endpoint)
-and the model identifier as separate values. Model identifiers commonly use
-colons (for example `qwen2.5:7b`) and must not be misinterpreted as a
-host. The CLI and TUI perform strict validation and normalization:
-
-- Acceptable host formats:
-  - `http://host:port` or `https://host:port` (any path is stripped)
-  - `host:port` (normalized to `http://host:port`)
-- Model identifiers (e.g. `qwen2.5:7b`) are never treated as hosts.
-
-Use `/provider set ollama host=http://localhost:11434 model=qwen2.5:7b`
-or the setup wizard to configure Ollama safely. You can validate current
-settings in the TUI with `/provider validate`.
-
-
-```
-    _   _______  _____  __   _________  __
-   / | / / __ \/   \ \/ /  / ____/   |/  /
-  /  |/ / / / / /| |\  /  / / __/ /|_/  /
- / /|  / /_/ / ___ |/ /  / /_/ / /  /  /
-/_/ |_/_____/_/  |_/_/   \____/_/  /__/
-```
+NOVA-X is a terminal-based AI assistant built for students, with support for multiple providers and specialized academic workflows. The app includes a Rich-powered TUI, subject tracking, assignment management, and safe Ollama endpoint handling.
 
 ## Features
 
-- **7 Specialised Modes**: Chat, Math Solver, Essay Writer, Code Helper, Research Assistant, Quiz Generator, and Explainer
-- **Multi-Provider AI**: Supports Google Gemini, local Ollama models, and OpenAI-compatible APIs
-- **Web Search**: DuckDuckGo integration for real-time research
-- **Learning Profile**: Tracks subjects, weak areas, strong areas, and quiz performance
-- **Assignment Tracker**: Manage deadlines and priorities
-- **Export**: Save conversations as TXT, Markdown, DOCX, or PDF
-- **Session History**: Automatically saves and can search past sessions
-- **Beautiful TUI**: Rich-powered terminal interface with 4 themes (dark, light, neon, minimal)
-
-## Screenshots
-
-The TUI features:
-- A mode sidebar with keyboard shortcuts
-- Styled chat messages with Markdown rendering
-- Welcome screen with quick-start guide
-- Statistics dashboard
-- Assignment overview panel
+- **Multi-provider AI**: Gemini, local Ollama, and OpenAI-compatible endpoints
+- **Safe Ollama handling**: model names like `qwen2.5:7b` are never treated as server URLs
+- **7 specialized modes**: chat, math, essay, code, research, quiz, and explain
+- **Web search**: DuckDuckGo support for real-time research
+- **Session history**: save, search, and recall past conversations
+- **Export support**: TXT, Markdown, DOCX, PDF
+- **Learning profile**: track subjects, strengths, and quiz performance
+- **Beautiful terminal UI**: four themes and rich message rendering
 
 ## Installation
 
 ### Requirements
-- Python 3.10 or higher
-- pip package manager
 
-### Quick Install
+- Python 3.10 or higher
+- `pip`
+
+### Install
+
 ```bash
 git clone <repository-url>
 cd NOVA-X
 pip install -r requirements.txt
 ```
 
-### Platform Launchers
+### Run
 
 **Windows:**
+
 ```cmd
 run.bat
 ```
 
 **macOS / Linux:**
+
 ```bash
 ./run.sh
 ```
 
-Or directly with Python:
+**Directly:**
+
 ```bash
 python nova_x.py
 ```
 
 ## Setup Wizard
 
-On first run, NOVA-X will guide you through setup:
+Run the first-time setup wizard to configure your profile and AI provider:
+
 ```bash
 python nova_x.py --setup
 ```
 
-This configures:
-- Your name and grade level
-- AI provider (Gemini, Ollama, or OpenAI)
-- API keys / host settings
-- Subjects you want to track
-- Visual theme preference
+The wizard configures:
 
-## VS Code Integration
+- user name and grade level
+- AI provider selection
+- Gemini/OpenAI API settings
+- Ollama host and model settings
+- subjects and theme preference
 
-You can run NOVA-X directly from VS Code's integrated terminal:
-1. Open the project folder in VS Code
-2. Open a terminal (`Ctrl+` `` ` ``)
-3. Run: `python nova_x.py`
+## Using Ollama
 
-For a dedicated terminal profile, add to your VS Code settings.json:
-```json
-{
-  "terminal.integrated.profiles.linux": {
-    "NOVA-X": {
-      "path": "bash",
-      "args": ["-c", "cd /path/to/NOVA-X && ./run.sh"]
-    }
-  }
-}
+NOVA-X treats the Ollama host and model as separate values.
+
+### Valid host formats
+
+- `http://host:port`
+- `https://host:port`
+- `host:port` (normalized to `http://host:port`)
+
+### Example
+
+```bash
+/provider set ollama host=http://localhost:11434 model=qwen2.5:7b
 ```
 
-## Mode Guide
+Model identifiers like `qwen2.5:7b` are never used as the host.
 
-### Chat Mode (default)
-General conversation and Q&A with the AI.
-```
-[Chat] > What is photosynthesis?
-```
-
-### Math Mode
-Step-by-step math problem solving with work checking.
-```
-[Math Solver] > solve 2x + 5 = 13
-[Math Solver] > check x = 4
-```
-
-### Essay Mode
-Essay planning, drafting, and improvement.
-```
-[Essay Writer] > outline The Impact of Climate Change
-[Essay Writer] > draft <paste your outline here>
-[Essay Writer] > improve <paste your essay here>
-```
-
-### Code Mode
-Programming help with write, debug, explain, and run commands.
-```
-[Code Helper] > write a function to sort a list using quicksort
-[Code Helper] > debug <paste your code here>
-[Code Helper] > run print([x**2 for x in range(10)])
-```
-
-### Research Mode
-Web search and deep research with synthesis.
-```
-[Research Assistant] > search history of the Roman Empire
-[Research Assistant] > deep artificial intelligence in education
-```
-
-### Quiz Mode
-Generate and take interactive quizzes.
-```
-[Quiz Generator] > start World Geography
-```
-
-### Explain Mode
-Simplified explanations with analogies and summaries.
-```
-[Explainer] > analogy quantum computing
-[Explainer] > summarize <paste text here>
-[Explainer] > terms photosynthesis
-```
-
-## Keyboard Shortcuts / Commands
+## Commands
 
 | Command | Description |
 |---------|-------------|
 | `/quit`, `/exit` | Exit NOVA-X |
-| `/help` | Show full help screen |
-| `/welcome` | Show welcome screen |
+| `/help` | Show help screen |
+| `/welcome` | Show welcome message |
 | `/clear` | Clear current conversation |
-| `/save [format]` | Export chat (txt/md/docx/pdf) |
-| `/history` | List past sessions |
+| `/save [format]` | Export chat |
+| `/history` | Show session history |
 | `/stats` | Show learning statistics |
-| `/mode <name>` | Switch to a different mode |
+| `/mode <name>` | Change active mode |
 | `/subjects` | List tracked subjects |
 | `/subjects add <name>` | Add a subject |
 | `/subjects remove <name>` | Remove a subject |
-| `/assignments` | View upcoming assignments |
-| `/quiz <subject>` | Start a quiz on a subject |
+| `/assignments` | View assignments |
+| `/quiz <subject>` | Start a quiz |
 | `/explain <topic>` | Explain a topic |
+
+## Modes
+
+### Chat
+General conversation and Q&A.
+
+### Math
+Solve math problems step-by-step.
+
+### Essay
+Outline, draft, and refine essays.
+
+### Code
+Write, debug, and explain code.
+
+### Research
+Search and summarize information.
+
+### Quiz
+Generate quizzes and practice questions.
+
+### Explain
+Simplify topics with analogies and summaries.
+
+## Testing
+
+Run the included test suite with:
+
+```bash
+python -m pytest -q
+```
 
 ## Configuration
 
-Configuration is stored in `~/.nova_x/config.json`:
+User settings are stored in `~/.nova_x/config.json`.
 
-```json
-{
-  "ai_provider": "gemini",
-  "gemini_api_key": "YOUR_API_KEY",
-  "gemini_model": "gemini-2.0-flash",
-  "ollama_host": "http://localhost:11434",
-  "ollama_model": "llama3.2",
-  "openai_api_key": "",
-  "openai_base_url": "https://api.openai.com/v1",
-  "openai_model": "gpt-4o-mini",
-  "theme": "dark",
-  "user_name": "",
-  "grade_level": "",
-  "subjects": [],
-  "first_run": false
-}
-```
+## Notes
 
-For Ollama with `qwen2.5:7b`, set:
+- Keep Ollama host URLs separate from model names.
+- Use `/provider validate` in the TUI to check current provider configuration.
+- The `.gitignore` file excludes Python artifacts, virtual environments, editor files, and test caches.
 
-```json
-{
-  "ai_provider": "ollama",
-  "ollama_host": "http://localhost:11434",
-  "ollama_model": "qwen2.5:7b"
-}
-```
+## License
 
-Data files stored in `~/.nova_x/`:
-- `config.json` -- Application settings
-- `profile.json` -- Learning profile and statistics
-- `subjects.json` -- Subject and assignment tracking
-- `history/` -- Saved conversation sessions
+This project is licensed under the MIT License. See [LICENSE](LICENSE) for details.
 
-## Troubleshooting
-
-### "No AI provider configured"
-Run `python nova_x.py --setup` to configure your AI provider and API key.
-
-### "Gemini client not initialised"
-Install the Google Generative AI SDK: `pip install google-generativeai`
-Ensure your Gemini API key is set in the config.
-
-### "Ollama request failed"
-Make sure Ollama is running locally: `ollama serve`
-Verify the host URL in config (default: http://localhost:11434).
-
-If you are using `qwen2.5:7b`, confirm the model is installed by running:
-```bash
-ollama list
-```
-Use the exact model name shown by Ollama, for example `qwen2.5:7b`.
-
-### Module not found errors
-Install all dependencies: `pip install -r requirements.txt`
-
-### Rich not found / TUI won't launch
-NOVA-X will automatically fall back to a simple CLI mode if Rich is not installed.
-Install Rich for the full TUI experience: `pip install rich`
-
-### Permission denied on run.sh
-Make the script executable: `chmod +x run.sh`
