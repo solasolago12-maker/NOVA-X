@@ -83,6 +83,17 @@ python examples/benchmark_local.py --provider local --model-path /path/to/model.
 ```
 
 Adjust `--iterations` and `--warmup` to suit your hardware.
+
+Auto-tuning
+-----------
+
+Use the auto-tune helper to test a few `n_gpu_layers` settings and persist the best one to your NOVA-X configuration:
+
+```bash
+python examples/auto_tune_local.py --model-path /path/to/model.gguf --iterations 3 --warmup 1 --csv tune_results.csv
+```
+
+Be sure to run auto-tune while your system is idle for more consistent results.
 ```
 
 ### Run

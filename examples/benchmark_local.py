@@ -9,7 +9,9 @@ latency for the configured provider using the NOVA-X `AIEngine`.
 """
 import argparse
 import time
+import csv
 from core.ai_engine import AIEngine
+from core.config_manager import ConfigManager
 
 
 def run_benchmark(provider: str, model_path: str, iterations: int, warmup: int = 2):
@@ -40,6 +42,7 @@ def run_benchmark(provider: str, model_path: str, iterations: int, warmup: int =
 
     avg = sum(durations) / len(durations) if durations else 0.0
     print(f"Average latency: {avg:.3f}s over {len(durations)} runs")
+    return durations
 
 
 def main():
@@ -50,7 +53,18 @@ def main():
     parser.add_argument("--warmup", type=int, default=1)
     args = parser.parse_args()
 
-    run_benchmark(args.provider, args.model_path, args.iterations, warmup=args.warmup)
+    durations = run_benchmark(args.provider, args.model_path, args.iterations, warmup=args.warmup)
+
+    if args.csv:
+        cfg = ConfigManager()
+        timestamp = int(time.time())
+        csv_path = args.csv
+        with open(csv_path, "a", newline="", encoding="utf-8") as fh:
+            writer = csv.writer(fh)
+            # Header: timestamp, provider, model, iterations, warmup, durations...
+            row = [timestamp, args.provider, args.model_path, args.iterations, args.warmup] + durations
+            writer.writerow(row)
+        print(f"Wrote results to {csv_path}")
 
 
 if __name__ == "__main__":
