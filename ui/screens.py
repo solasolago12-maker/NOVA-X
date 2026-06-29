@@ -6,6 +6,7 @@ engine, handling user input, dispatching to mode-specific processors,
 and rendering all output.
 """
 
+import argparse
 import os
 import re
 import sys
@@ -51,6 +52,7 @@ try:
     from skills.research import ResearchAssistant
     from skills.quiz_generator import QuizGenerator
     from skills.explainer import Explainer
+    from skills.auto_tune import AutoTuneSkill
     SKILLS_AVAILABLE = True
 except ImportError:
     SKILLS_AVAILABLE = False
@@ -95,6 +97,7 @@ class MainScreen:
             self.skills["research"] = ResearchAssistant()
             self.skills["quiz"] = QuizGenerator()
             self.skills["explain"] = Explainer()
+            self.skills["auto_tune"] = AutoTuneSkill(self.ai)
 
         # State
         self._running = True
@@ -161,6 +164,8 @@ class MainScreen:
             self._process_quiz(user_input)
         elif mode == "explain":
             self._process_explain(user_input)
+        elif mode == "auto_tune":
+            self._process_auto_tune(user_input)
         elif mode == "jarvis":
             self._process_jarvis(user_input)
         else:
@@ -193,6 +198,48 @@ class MainScreen:
             response = self.ai.chat(message, mode="jarvis", history=self.session.get_history_for_ai())
         self._last_response = response
         self.console.print(Markdown(response))
+
+    def _process_auto_tune(self, message: str) -> None:
+        """Process auto-tune commands in auto_tune mode."""
+        self.console.print(widgets.create_chat_message("user", message))
+        self.console.print()
+
+        if not SKILLS_AVAILABLE or "auto_tune" not in self.skills:
+            self._last_response = (
+                "Auto-Tune skill is not available. "
+                "Install the required modules and restart NOVA-X."
+            )
+            self.console.print(Panel(Markdown(self._last_response), title="Auto-Tune", style="nova.border"))
+            return
+
+        components = message.split()
+        params = {"model_path": "", "iterations": 3, "warmup": 1}
+        for component in components:
+            if "=" in component:
+                key, value = component.split("=", 1)
+                if key in params:
+                    params[key] = value if key == "model_path" else int(value)
+
+        model_path = params["model_path"]
+        if not model_path:
+            self._last_response = self.skills["auto_tune"].explain()
+            self.console.print(Panel(Markdown(self._last_response), title="Auto-Tune", style="nova.border"))
+            return
+
+        self.console.print(Panel("Running auto-tune benchmark...", title="Auto-Tune", style="nova.border"))
+        try:
+            durations = self.skills["auto_tune"].run(model_path, iterations=params["iterations"], warmup=params["warmup"])
+            avg = sum(durations) / len(durations) if durations else 0.0
+            result = (
+                f"Auto-tune completed for {model_path}.\n"
+                f"Iterations: {len(durations)}, average latency: {avg:.3f}s.\n"
+                f"Details: {', '.join(f'{d:.3f}s' for d in durations)}"
+            )
+        except Exception as exc:
+            result = f"Auto-tune failed: {exc}"
+
+        self._last_response = result
+        self.console.print(Panel(Markdown(result), title="Auto-Tune Results", style="nova.border"))
 
     # ------------------------------------------------------------------
     # Math mode

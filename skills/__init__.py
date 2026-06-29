@@ -17,5 +17,6 @@ from .code_helper import CodeHelper
 from .research import ResearchAssistant
 from .quiz_generator import QuizGenerator
 from .explainer import Explainer
+from .auto_tune import AutoTuneSkill
 
-__all__ = ["MathSolver", "EssayWriter", "CodeHelper", "ResearchAssistant", "QuizGenerator", "Explainer"]
+__all__ = ["MathSolver", "EssayWriter", "CodeHelper", "ResearchAssistant", "QuizGenerator", "Explainer", "AutoTuneSkill"]

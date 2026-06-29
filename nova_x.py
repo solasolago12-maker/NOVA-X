@@ -199,7 +199,7 @@ def main() -> None:
     )
     parser.add_argument(
         "--mode", type=str, default="chat",
-        choices=["chat", "math", "essay", "code", "research", "quiz", "explain", "jarvis"],
+        choices=["chat", "math", "essay", "code", "research", "quiz", "explain", "auto_tune", "jarvis"],
         help="Launch directly into a specific mode (default: chat)",
     )
     parser.add_argument(

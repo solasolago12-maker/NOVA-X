@@ -9,7 +9,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 
-MODES = ["chat", "math", "essay", "code", "research", "quiz", "explain", "jarvis"]
+MODES = ["chat", "math", "essay", "code", "research", "quiz", "explain", "auto_tune", "jarvis"]
 
 MODE_DISPLAY_NAMES: Dict[str, str] = {
     "chat": "General Chat",
@@ -19,6 +19,7 @@ MODE_DISPLAY_NAMES: Dict[str, str] = {
     "research": "Research Assistant",
     "quiz": "Quiz Generator",
     "explain": "Explainer",
+    "auto_tune": "Auto-Tune",
     "jarvis": "Jarvis Command Center",
 }
 
