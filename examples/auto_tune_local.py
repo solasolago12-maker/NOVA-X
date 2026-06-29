@@ -19,7 +19,7 @@ from examples.benchmark_local import run_benchmark
 CANDIDATES = [0, 4, 8, 12, 16]
 
 
-def auto_tune(model_path: str, iterations: int = 3, warmup: int = 1, csv_log: str | None = None):
+def auto_tune(model_path: str, iterations: int = 3, warmup: int = 1, csv_log: str | None = None, dry_run: bool = False):
     cfg_mgr = ConfigManager()
 
     best = None
@@ -49,7 +49,12 @@ def auto_tune(model_path: str, iterations: int = 3, warmup: int = 1, csv_log: st
         print("Auto-tune could not determine a best setting.")
         return
 
-    print(f"Best n_gpu_layers: {best} (avg {best_avg:.3f}s). Persisting to config.")
+    print(f"Best n_gpu_layers: {best} (avg {best_avg:.3f}s).")
+    if dry_run:
+        print("Dry-run enabled; not persisting config or writing CSV.")
+        return
+
+    print("Persisting best setting to config.")
     cfg_mgr.set("local_n_gpu_layers", best)
 
     if csv_log:
@@ -65,9 +70,10 @@ def main():
     parser.add_argument("--iterations", type=int, default=3)
     parser.add_argument("--warmup", type=int, default=1)
     parser.add_argument("--csv", help="CSV file to append results to", default=None)
+    parser.add_argument("--dry-run", action="store_true", help="Run auto-tune without persisting changes")
     args = parser.parse_args()
 
-    auto_tune(args.model_path, iterations=args.iterations, warmup=args.warmup, csv_log=args.csv)
+    auto_tune(args.model_path, iterations=args.iterations, warmup=args.warmup, csv_log=args.csv, dry_run=args.dry_run)
 
 
 if __name__ == "__main__":

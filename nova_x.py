@@ -207,6 +207,10 @@ def main() -> None:
         help="Run auto-tune for local llama-cpp-python model (non-interactive).",
     )
     parser.add_argument(
+        "--dry-run", action="store_true",
+        help="When used with --auto-tune-local, perform a dry run without persisting config or writing CSV.",
+    )
+    parser.add_argument(
         "--model-path", type=str, default="",
         help="Path to local model used by auto-tune/benchmark commands.",
     )
@@ -235,7 +239,7 @@ def main() -> None:
             return
         try:
             from examples.auto_tune_local import auto_tune
-            auto_tune(args.model_path, iterations=args.iterations, warmup=args.warmup, csv_log=args.csv or None)
+            auto_tune(args.model_path, iterations=args.iterations, warmup=args.warmup, csv_log=args.csv or None, dry_run=args.dry_run)
         except Exception as exc:
             print(f"[ERROR] Auto-tune failed: {exc}")
         return
