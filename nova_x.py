@@ -63,7 +63,8 @@ def run_setup_wizard() -> None:
     print("  1. Gemini (Google) -- recommended")
     print("  2. Ollama (local)")
     print("  3. OpenAI / OpenAI-compatible")
-    provider_choice = input("Select AI provider (1-3, default=1): ").strip() or "1"
+    print("  4. Local (llama-cpp-python)")
+    provider_choice = input("Select AI provider (1-4, default=1): ").strip() or "1"
 
     if provider_choice == "1":
         config.set("ai_provider", "gemini")
@@ -92,6 +93,11 @@ def run_setup_wizard() -> None:
         model = input("Model (default: gpt-4o-mini): ").strip()
         if model:
             config.set("openai_model", model)
+    elif provider_choice == "4":
+        config.set("ai_provider", "local")
+        model_path = input("Local model path (file or directory): ").strip()
+        if model_path:
+            config.set("local_model_path", model_path)
 
     # Subjects
     print("\nAdd subjects you want to track (comma-separated, or skip):")

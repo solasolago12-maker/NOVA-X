@@ -575,7 +575,7 @@ class MainScreen:
                 self.console.print(f"[nova.info]Gemini API key configured: {bool(api_key)} | Model: {model}[/nova.info]")
             return
         if action == "list":
-            self.console.print("[nova.info]Available providers: gemini, ollama, openai[/nova.info]")
+            self.console.print("[nova.info]Available providers: gemini, ollama, openai, local[/nova.info]")
             return
         if action == "models":
             models = self.ai.get_available_models()
@@ -583,8 +583,8 @@ class MainScreen:
             return
         if action == "set" and len(args) >= 2:
             provider = args[1].lower()
-            if provider not in ("gemini", "ollama", "openai"):
-                self.console.print("[nova.error]Invalid provider. Choose gemini, ollama, or openai.[/nova.error]")
+            if provider not in ("gemini", "ollama", "openai", "local"):
+                self.console.print("[nova.error]Invalid provider. Choose gemini, ollama, openai, or local.[/nova.error]")
                 return
 
             host = None

@@ -30,6 +30,16 @@ NOVA-X is a terminal-based AI assistant built for students, with support for mul
 git clone <repository-url>
 cd NOVA-X
 pip install -r requirements.txt
+
+Optional (local models):
+
+For a local high-performance model using `llama-cpp-python` (CPU or GPU), install:
+
+```bash
+pip install "llama-cpp-python>=0.1.0"
+```
+
+You will also need a compatible GGML or GGUF model file. See `llama-cpp-python` documentation and model repositories (e.g. Hugging Face) for download instructions. Configure the model path in the NOVA-X setup or by setting `local_model_path` in `~/.nova_x/config.json`.
 ```
 
 ### Run
